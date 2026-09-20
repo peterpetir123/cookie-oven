@@ -31,5 +31,13 @@
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "overrides": {
+    "rpc-websockets": {
+      "uuid": "^11.1.0"
+    }
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

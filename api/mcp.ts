@@ -13,7 +13,7 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { handle, type HandlerRequest } from "../server/handler.js";
+import { handle, type HandlerRequest } from "../server/handler.ts";
 
 const MAX_BODY = 1_000_000;
 
