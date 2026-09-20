@@ -4,6 +4,17 @@
 
 Built for the Superteam Earn bounty [*Create an App on Cookie Chain*](https://superteam.fun/earn/listing/create-an-app-on-cookie-chain-app).
 
+| | |
+|---|---|
+| **Live app** | https://cookie-oven-nine.vercel.app |
+| **Repository** | https://github.com/peterpetir123/cookie-oven |
+| **Chain** | Cookie Chain (SVM) — genesis `9wDaBRDgArEUpvhHxGguNkwozsZh4UpGZB9o2EoEcBB2` |
+| **Programs used** | MomoSwap launchpad `momoL7wu4TrXjnXMLCLzGsbx8Pm7XGgoYo7FVqDoqcw`, Cookie DAS, Hyperlane warp route |
+
+No program is deployed by this app — it drives Cookie Chain's genesis programs through
+[`cookie-mcp`](https://github.com/cookiechain/cookie-mcp), so there is no new on-chain surface to
+audit and nothing to trust beyond the chain itself.
+
 ---
 
 ## What it is
@@ -118,7 +129,35 @@ production puts the same handler behind a Vercel Function. One implementation, t
 | `npm run dev:web` | Vite alone |
 | `npm run build` | Typecheck and build to `dist/` |
 | `npm test` | Unit tests (`node:test`, no test framework dependency) |
+| `npm run smoke` | Live smoke test against `localhost:8790` |
+| `npm run smoke -- <url>` | The same checks against a deployment |
 | `npm run lint` | oxlint |
+
+### Verifying it on-chain
+
+`npm run smoke` exercises the real handler against the live chain and needs no wallet and no COOK —
+every action that would move funds stops at `needs_signature`, which is the property being checked.
+Run against the deployment:
+
+```console
+$ npm run smoke -- https://cookie-oven-nine.vercel.app
+
+  PASS  chain_health                       ok — absoluteSlot=26296398
+  PASS  launchpad_pools                    ok — count=12
+  PASS  balances                           ok — wallet="FFWf…4wq2"
+  PASS  launchpad_buy                      needs_signature — buy, 1084 B unsigned
+  PASS  bridge                             needs_signature — bridge, 1088 B unsigned
+  PASS  write without a wallet is refused  refused — This action moves funds…
+  PASS  unknown tool is refused            refused — Unknown tool "steal_keys".
+  PASS  malformed address is refused       refused — "not-base58!!" is not a valid base58 address.
+
+12 passed, 0 failed, 1 skipped
+```
+
+The skip is not a gap: `launchpad_sell` needs a position to sell, so the test discovers one and
+skips when the test wallet holds none — asserting that a specific wallet holds a sellable position
+on a specific day is not a promise this code can make.
+
 
 ### Getting COOK
 
@@ -157,10 +196,11 @@ Browser (React + Vite)                Vercel Function /api/mcp           Cookie 
 ## Project layout
 
 ```
-api/mcp.ts                 Vercel Function transport
-server/
-  handler.ts               Allowlist, wallet scoping, external-signer bridge
-  dev.ts                   Local Node sidecar (same handler)
+api/mcp.ts                 The whole server: allowlist, wallet scoping, external-signer bridge,
+                           and the Vercel transport. One file with no relative imports, because
+                           Vercel compiles api/ but not files outside it.
+server/dev.ts              Local Node sidecar (imports handle() from api/mcp.ts)
+scripts/smoke.ts           Live end-to-end checks against a running API
 src/
   lib/
     chain.ts               RPC, genesis guard, program IDs, explorer URLs
@@ -177,6 +217,25 @@ src/
   components/              ui.tsx · Stages.tsx · WalletButton.tsx
 tests/                     format · handler
 ```
+
+## Deployment notes
+
+The serverless deploy hit two failures that do not reproduce locally. Both are recorded because
+they cost real time and neither is obvious from the error message:
+
+1. **`ERR_MODULE_NOT_FOUND` for a `.ts` path.** Vercel compiles the TypeScript under `api/` but not
+   files outside it, and does not rewrite import specifiers. `../server/handler.ts` therefore
+   arrived at the runtime as a literal path to a file that was never compiled — while running fine
+   locally under `tsx`, which *does* remap `.js` specifiers to `.ts` sources. The fix is one
+   self-contained file rather than a workaround for one bad import.
+
+2. **`ERR_REQUIRE_ESM` from `rpc-websockets`.** `rpc-websockets@9.3.9` — a `@solana/web3.js`
+   dependency — declares `uuid@^14`, which is ESM-only, while its own `dist` is CommonJS and
+   `require()`s it. Node 24 tolerates `require(esm)`; the Vercel runtime does not. `package.json`
+   pins `uuid@^11` through `overrides`, which ships a CJS build with the same API surface. We never
+   open a WebSocket connection, but the module is imported at load time.
+
+The frontend deploys as a static build either way; only `/api/mcp` is a function.
 
 ## Known limits
 
