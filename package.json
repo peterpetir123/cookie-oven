@@ -11,7 +11,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node --import tsx --test tests/*.test.ts",
-    "test:watch": "node --import tsx --test --watch tests/*.test.ts"
+    "test:watch": "node --import tsx --test --watch tests/*.test.ts",
+    "smoke": "node --import tsx scripts/smoke.ts"
   },
   "dependencies": {
     "@solana/web3.js": "^1.99.0",

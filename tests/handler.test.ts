@@ -13,7 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { MESSAGE_SIGN_TOOLS, TOOLS } from "../server/handler.ts";
+import { MESSAGE_SIGN_TOOLS, TOOLS } from "../api/mcp.ts";
 
 test("every declared tool names a function", () => {
   for (const [name, spec] of Object.entries(TOOLS)) {

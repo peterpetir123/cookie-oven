@@ -11,7 +11,7 @@
 
 import http from "node:http";
 
-import { handle, type HandlerRequest } from "./handler.ts";
+import { handle, type HandlerRequest } from "../api/mcp.ts";
 
 const PORT = Number(process.env.PORT ?? 8790);
 
