@@ -211,3 +211,72 @@ export interface DomainListingsResult {
   marketUrl: string;
   listings: DomainListing[];
 }
+
+/* ------------------------------------------------------------ limit orders */
+
+export interface LimitOrderView {
+  order: string;
+  kind: "limit" | "stop";
+  /** `expired` means the input is still escrowed and has to be cancelled to get it back. */
+  status: "open" | "filling" | "expired";
+  input: { mint: string; symbol: string | null; remaining: string; original: string };
+  output: { mint: string; symbol: string | null; minReceive: string; netAfterFee: string };
+  /** Output per input in human units. For a stop order this is the trigger, not a rate. */
+  price: number | null;
+  expiresAt?: string | null;
+  createdAt?: string | null;
+}
+
+export interface LimitOrdersResult {
+  owner: string;
+  ownerName?: string;
+  fees: { makerFeeBps: number; makerStableFeeBps: number; takerFeeBps: number; takerStableFeeBps: number } | null;
+  count: number;
+  orders: LimitOrderView[];
+}
+
+/* --------------------------------------------------------------- .cook names */
+
+export interface ResolveDomainResult {
+  name: string;
+  owner: string;
+  address?: string;
+  isPrimary?: boolean;
+  resolver?: string | null;
+}
+
+export interface OwnedDomain {
+  name: string;
+  label: string;
+  account: string;
+  isPrimary: boolean;
+  resolver: string | null;
+  metadata: string | null;
+  createdAt: string | null;
+}
+
+export interface OwnedDomainsResult {
+  wallet: string;
+  count: number;
+  domains: OwnedDomain[];
+}
+
+/* ------------------------------------------------------------- Baked Bazaar */
+
+export interface NftListingView {
+  mint: string;
+  name?: string;
+  symbol?: string;
+  price: string;
+  priceLamports: string;
+  seller: string;
+  image?: string;
+  collection?: string;
+  listing: string;
+  url: string;
+}
+
+export interface NftListingsResult {
+  count: number;
+  listings: NftListingView[];
+}

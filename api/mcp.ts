@@ -118,12 +118,14 @@ export const TOOLS: Record<string, ToolSpec> = {
   nft_listings: { fn: mcp.getNftListings as never, write: false, shape: { kind: "object" } },
   domain_listings: { fn: mcp.getDomainListings as never, write: false, shape: { kind: "object" } },
   resolve_domain: { fn: mcp.resolveDomain as never, write: false, shape: { kind: "string", key: "name" } },
+  search_nfts: { fn: mcp.searchNfts as never, write: false, shape: { kind: "string", key: "query" } },
 
   // ---- reads that need to know whose wallet to look at ----
   balances: { fn: mcp.getBalances as never, write: false, shape: { kind: "wallet" } },
   owned_domains: { fn: mcp.getOwnedDomains as never, write: false, shape: { kind: "wallet" } },
   wallet_nfts: { fn: mcp.getWalletNfts as never, write: false, shape: { kind: "wallet" } },
   launchpad_positions: { fn: mcp.getLaunchpadPositions as never, write: false, shape: { kind: "object" } },
+  limit_orders: { fn: mcp.getLimitOrders as never, write: false, shape: { kind: "object" } },
 
   // ---- writes: build a transaction, stop at the signature ----
   launchpad_buy: { fn: mcp.launchpadBuy as never, write: true, shape: { kind: "object" } },
@@ -134,6 +136,11 @@ export const TOOLS: Record<string, ToolSpec> = {
   transfer: { fn: mcp.transfer as never, write: true, shape: { kind: "object" } },
   trade: { fn: mcp.trade as never, write: true, shape: { kind: "object" } },
   place_limit_order: { fn: mcp.placeLimitOrder as never, write: true, shape: { kind: "object" } },
+  cancel_limit_order: { fn: mcp.cancelLimitOrder as never, write: true, shape: { kind: "object" } },
+  register_domain: { fn: mcp.registerDomain as never, write: true, shape: { kind: "object" } },
+  buy_domain: { fn: mcp.buyDomain as never, write: true, shape: { kind: "object" } },
+  list_domain: { fn: mcp.listDomain as never, write: true, shape: { kind: "object" } },
+  buy_nft: { fn: mcp.buyNft as never, write: true, shape: { kind: "object" } },
   submit_signed_tx: { fn: mcp.submitSignedTransaction as never, write: true, shape: { kind: "object" } },
 };
 

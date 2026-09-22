@@ -46,9 +46,36 @@ const CHECKS: Check[] = [
   { label: "balances", request: { tool: "balances", wallet: WALLET }, expect: "data", field: "wallet" },
   { label: "launchpad_positions", request: { tool: "launchpad_positions", args: {}, wallet: WALLET }, expect: "data", field: "poolsScanned" },
 
+  // The two markets, and the order book.
+  { label: "nft_listings", request: { tool: "nft_listings", args: { limit: 5, sort: "price" } }, expect: "data", field: "count" },
+  { label: "search_nfts", request: { tool: "search_nfts", args: { query: "Sesamian" } }, expect: "data", field: "count" },
+  { label: "domain_listings", request: { tool: "domain_listings", args: { limit: 5, sort: "price" } }, expect: "data", field: "count" },
+  { label: "resolve_domain", request: { tool: "resolve_domain", args: { name: "cookies" } }, expect: "data", field: "owner" },
+  { label: "owned_domains", request: { tool: "owned_domains", wallet: WALLET }, expect: "data", field: "count" },
+  { label: "limit_orders", request: { tool: "limit_orders", args: {}, wallet: WALLET }, expect: "data", field: "count" },
+
   // Writes: the whole point is that these come back unsigned.
   { label: "launchpad_buy", request: { tool: "launchpad_buy", args: { ref: POOL, amountCook: "0.01" }, wallet: WALLET }, expect: "needs-signature" },
   { label: "bridge", request: { tool: "bridge", args: { direction: "cookie-to-solana", amount: "1" }, wallet: WALLET }, expect: "needs-signature" },
+  // A rate far above the market cannot fill immediately, which is the one thing
+  // `place_limit_order` refuses to build. Pinned high on purpose so the check
+  // tests the order path rather than the day's bCOOK price.
+  {
+    label: "place_limit_order",
+    request: {
+      tool: "place_limit_order",
+      args: {
+        inputMint: "So11111111111111111111111111111111111111112",
+        outputMint: "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz",
+        amount: "0.5",
+        price: "1000",
+        kind: "limit",
+        expiresInSeconds: 3600,
+      },
+      wallet: WALLET,
+    },
+    expect: "needs-signature",
+  },
 
   // Guards. These are the failures that prove the app is safe to host.
   { label: "write without a wallet is refused", request: { tool: "launchpad_buy", args: { ref: POOL, amountCook: "1" } }, expect: "refused" },

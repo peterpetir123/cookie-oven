@@ -29,15 +29,32 @@ test("write tools are exactly the ones that move funds", () => {
 
   assert.deepEqual(writes, [
     "bridge",
+    "buy_domain",
+    "buy_nft",
+    "cancel_limit_order",
     "claim_launchpad",
     "deploy_token",
     "launchpad_buy",
     "launchpad_sell",
+    "list_domain",
     "place_limit_order",
+    "register_domain",
     "submit_signed_tx",
     "trade",
     "transfer",
   ]);
+});
+
+test("every write tool is refused without a wallet", async () => {
+  // The guard lives in `handle`, not in the tool list, so the list alone is not
+  // proof. A write tool that slipped through would be reachable by anyone.
+  const { handle } = await import("../api/mcp.ts");
+  for (const [name, spec] of Object.entries(TOOLS)) {
+    if (!spec.write) continue;
+    const res = await handle({ tool: name, args: {} });
+    assert.equal(res.ok, false, `${name} was not refused without a wallet`);
+    assert.match(res.error ?? "", /needs a connected wallet/, `${name} refused for the wrong reason`);
+  }
 });
 
 test("reads that only inspect the caller's own wallet use the wallet shape", () => {

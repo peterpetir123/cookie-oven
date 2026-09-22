@@ -16,16 +16,27 @@ import { PulsePage } from "./pages/Pulse.js";
 import { RadarPage } from "./pages/Radar.js";
 import { OvenPage } from "./pages/Oven.js";
 import { TradePage } from "./pages/Trade.js";
+import { OrdersPage } from "./pages/Orders.js";
+import { BazaarPage } from "./pages/Bazaar.js";
+import { NamesPage } from "./pages/Names.js";
 import { PortfolioPage } from "./pages/Portfolio.js";
 import { BridgePage } from "./pages/Bridge.js";
 import type { LaunchpadPool } from "./lib/types.js";
 
-type Tab = "radar" | "oven" | "trade" | "portfolio" | "bridge" | "pulse";
+type Tab = "radar" | "oven" | "trade" | "orders" | "bazaar" | "names" | "portfolio" | "bridge" | "pulse";
 
+/**
+ * Ordered by what people come here to do. Launching and trading first, the two
+ * markets next, and the read-only views last, because a tab bar is a queue and
+ * the order is the only thing telling anyone what this app is for.
+ */
 const TABS: { id: Tab; label: string }[] = [
   { id: "radar", label: "Radar" },
   { id: "oven", label: "Oven" },
   { id: "trade", label: "Trade" },
+  { id: "orders", label: "Orders" },
+  { id: "bazaar", label: "Bazaar" },
+  { id: "names", label: "Names" },
   { id: "portfolio", label: "Portfolio" },
   { id: "bridge", label: "Bridge" },
   { id: "pulse", label: "Pulse" },
@@ -72,6 +83,9 @@ export default function App() {
         {tab === "radar" ? <RadarPage onTrade={goTrade} /> : null}
         {tab === "oven" ? <OvenPage connection={wallet.connection} /> : null}
         {tab === "trade" ? <TradePage connection={wallet.connection} initialPool={pool} /> : null}
+        {tab === "orders" ? <OrdersPage connection={wallet.connection} /> : null}
+        {tab === "bazaar" ? <BazaarPage connection={wallet.connection} /> : null}
+        {tab === "names" ? <NamesPage connection={wallet.connection} /> : null}
         {tab === "portfolio" ? <PortfolioPage connection={wallet.connection} /> : null}
         {tab === "bridge" ? <BridgePage connection={wallet.connection} /> : null}
         {tab === "pulse" ? <PulsePage /> : null}

@@ -143,4 +143,23 @@ export const TOOL = {
   stakeInfo: "stake_info",
   marketStats: "market_stats",
   submitSigned: "submit_signed_tx",
+
+  // Limit and stop orders.
+  limitOrders: "limit_orders",
+  placeLimitOrder: "place_limit_order",
+  cancelLimitOrder: "cancel_limit_order",
+
+  // Baked Bazaar, the NFT market.
+  nftListings: "nft_listings",
+  searchNfts: "search_nfts",
+  buyNft: "buy_nft",
+  walletNfts: "wallet_nfts",
+
+  // .cook names.
+  domainListings: "domain_listings",
+  resolveDomain: "resolve_domain",
+  ownedDomains: "owned_domains",
+  registerDomain: "register_domain",
+  buyDomain: "buy_domain",
+  listDomain: "list_domain",
 } as const;
