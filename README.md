@@ -90,10 +90,16 @@ There is **no faucet** and **no devnet**. COOK is obtained only by bridging from
 | **Oven** — launch a token | `deploy_token` | Two-phase: a `signMessage` login, then the launch transaction |
 | **Radar** — every live curve | `get_launchpad_pools` | Graduation progress is the headline number, because it decides whether the sell side still works |
 | **Trade** — buy / sell | `launchpad_buy`, `launchpad_sell` | Balance checked client-side *before* a wallet prompt |
+| **Orders** — limit and stop | `place_limit_order`, `cancel_limit_order`, `get_limit_orders` | The market rate is shown first, because the program refuses a limit that would fill immediately and a refusal you cannot act on is just a wall |
+| **Bazaar** — Baked Bazaar | `get_nft_listings`, `search_nfts`, `buy_nft` | A grid, because what is for sale is an image and a price |
+| **Names** — `.cook` registry | `resolve_domain`, `register_domain`, `buy_domain`, `list_domain` | Registry and marketplace kept apart: two programs, two prices |
 | **Portfolio** — holdings | `balances`, `get_launchpad_positions` | |
 | **Claim centre** | `claim_launchpad` | Scans every pool for refunds, payouts and creator fees nobody was told about |
 | **Bridge** | `bridge` | Hyperlane warp route, in-app |
 | **Pulse** — chain health | `get_chain_health`, `get_pools`, `get_stake_info`, `get_market_stats` | Every figure live, nothing mocked |
+
+32 tools, all allowlisted. Fourteen of them move funds and every one is refused without a
+connected wallet, which `tests/handler.test.ts` asserts rather than assumes.
 
 ### Transaction lifecycle
 
@@ -142,16 +148,21 @@ Run against the deployment:
 ```console
 $ npm run smoke -- https://cookie-oven-nine.vercel.app
 
-  PASS  chain_health                       ok — absoluteSlot=26296398
+  PASS  chain_health                       ok — absoluteSlot=26606896
   PASS  launchpad_pools                    ok — count=12
   PASS  balances                           ok — wallet="FFWf…4wq2"
+  PASS  nft_listings                       ok — count=102
+  PASS  domain_listings                    ok — count=9
+  PASS  resolve_domain                     ok — owner="7rQTSWbk1nMRPve2q3wcS1rT6g2shk…"
+  PASS  limit_orders                       ok — count=0
   PASS  launchpad_buy                      needs_signature — buy, 1084 B unsigned
   PASS  bridge                             needs_signature — bridge, 1088 B unsigned
+  PASS  place_limit_order                  needs_signature — limit-order placement, 924 B unsigned
   PASS  write without a wallet is refused  refused — This action moves funds…
   PASS  unknown tool is refused            refused — Unknown tool "steal_keys".
   PASS  malformed address is refused       refused — "not-base58!!" is not a valid base58 address.
 
-12 passed, 0 failed, 1 skipped
+19 passed, 0 failed, 1 skipped
 ```
 
 The skip is not a gap: `launchpad_sell` needs a position to sell, so the test discovers one and
@@ -186,8 +197,9 @@ Browser (React + Vite)                Vercel Function /api/mcp           Cookie 
 - **Genesis guard.** `assertCookieChain()` compares the RPC's genesis against Cookie Chain's before
   any signature is requested, and refuses to build if they differ. Cached per session, since a
   genesis hash cannot change.
-- **Allowlisted tools.** The request body is attacker-controlled, so the server names the 25 tools
-  it will run rather than dispatching on whatever the client sends.
+- **Allowlisted tools.** The request body is attacker-controlled, so the server names the 32 tools
+  it will run rather than dispatching on whatever the client sends. 32 tools, of which
+  fourteen move funds, and every one of those is refused without a connected wallet.
 - **Wallet-scoped requests.** The connected address is passed per request and used only to pick the
   fee payer. A caller cannot act for a wallet it cannot sign for.
 - **Balances checked before prompting.** An order that cannot fill never reaches a wallet popup — a
@@ -213,7 +225,8 @@ src/
     useWallet.ts           Connection, silent reconnect, network switch
     useTransaction.ts      Pipeline state for components
     usePoll.ts             Safe polling (no overlap, backoff, keeps stale data)
-  pages/                   Oven · Radar · Trade · Portfolio · Bridge · Pulse
+  pages/                   Radar · Oven · Trade · Orders · Bazaar · Names · Portfolio
+                           Bridge · Pulse
   components/              ui.tsx · Stages.tsx · WalletButton.tsx
 tests/                     format · handler
 ```
